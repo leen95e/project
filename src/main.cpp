@@ -3,9 +3,10 @@
 #include <sstream>
 #include <stdexcept>
 #include "lexer.h"
+#include "parser.h"
 
 int main(int argc, char* argv[]) {
-    std::string source = "x = 3 * (4 + 2);";
+    std::string source = "y = 8 - 3 - 2;";
     if (argc > 1) {
         std::ifstream file(argv[1]);
         if (!file) {
@@ -18,8 +19,11 @@ int main(int argc, char* argv[]) {
     }
 
     try {
-        for (const Token& tok : tokenize(source)) {
-            std::cout << tokenTypeName(tok.type) << " '" << tok.text << "'\n";
+        std::vector<Token> tokens = tokenize(source);     // 1. Lexer
+        Parser parser(tokens);
+        Program program = parser.parseProgram();          // 2. Parser -> AST
+        for (const Assign& stmt : program) {
+            std::cout << stmt.name << " = " << stmt.value->toString() << "\n";
         }
     } catch (const std::runtime_error& e) {
         std::cerr << "Error: " << e.what() << "\n";
