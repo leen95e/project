@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include "lexer.h"
 #include "parser.h"
+#include "optimizer.h"
 
 int main(int argc, char* argv[]) {
     std::string source = "y = 8 - 3 - 2;";
@@ -22,10 +23,16 @@ int main(int argc, char* argv[]) {
         std::vector<Token> tokens = tokenize(source);     // 1. Lexer
         Parser parser(tokens);
         Program program = parser.parseProgram();          // 2. Parser -> AST
-        for (const Assign& stmt : program) {
+        std::cout << "--- before ---\n";
+        for (const Assign& stmt : program)
             std::cout << stmt.name << " = " << stmt.value->toString() << "\n";
-        }
-    } catch (const std::runtime_error& e) {
+
+        optimize(program);                                // 3. Optimizer
+
+        std::cout << "--- after ---\n";
+        for (const Assign& stmt : program)
+            std::cout << stmt.name << " = " << stmt.value->toString() << "\n";
+    } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << "\n";
         return 1;
     }
